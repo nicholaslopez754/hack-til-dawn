@@ -11,12 +11,19 @@ train_bucket = 'crowdcam-training'
 raw_bucket = 'crowdcam-raw'
 match_butcket = 'crowdcam-matches'
 
-client=boto3.client('rekognition','us-west-2')
+"""
+Rekognition
+"""
+client=boto3.client('rekognition',
+    aws_access_key_id=config.aws_account_id,
+    aws_secret_access_key=config.aws_account_secret,
+    region_name='us-east-1')
+
 response = client.detect_labels(Image=
     {
         'S3Object': {
             'Bucket': raw_bucket,
-            'Name': 'image3.jpeg'
+            'Name': 'image1.jpeg'
         }
     })
 
