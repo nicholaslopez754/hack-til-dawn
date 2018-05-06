@@ -21,12 +21,13 @@ client = boto3.client('rekognition',
     aws_secret_access_key=config.aws_account_secret,
     region_name='us-east-1')
 
-def get_imgs_from_id(user_id):
+def get_user_images(user_id):
     bucket = s3.Bucket(train_bucket)
     prefix = '{}'.format(user_id)
     bucket_content = bucket.objects.filter(Prefix=prefix)
     return [obj.key for obj in bucket_content if '.jpeg' in obj.key]
 
+# Testing utility function to simulate lambda index
 def index_from_raw():
     # Collection management
     cols = client.list_collections()['CollectionIds']
@@ -53,14 +54,14 @@ def index_from_raw():
             ExternalImageId=obj.key
         )
 
-def search_collection(input_img, collection):
+def search_collection(input_img, collection, threshold):
     return client.search_faces_by_image(
         CollectionId=collection,
         Image={
             'S3Object': input_img
         },
         MaxFaces=100,
-        FaceMatchThreshold=20
+        FaceMatchThreshold=threshold
     )
 
 if __name__ == '__main__':
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     print(test_img)
     collection = 'test_collection'
 
-    results = search_collection(test_img, collection)['FaceMatches']
+    results = search_collection(test_img, collection, 70)['FaceMatches']
     for result in results:
         print(result['Face']['ExternalImageId'], result['Similarity'], sep='\t')
     #ndex_from_raw()
