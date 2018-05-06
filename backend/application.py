@@ -2,13 +2,13 @@ from flask import Flask, jsonify, make_response
 from recognize import get_user_images, search_collection, create_train_image
 from config import raw_collection, similarity_threshold
 
-app = Flask(__name__)
+application = Flask(__name__)
 
-@app.route('/')
+@application.route('/')
 def root():
     return "Crowd Cam Server"
 
-@app.route('/fetch/<user_id>')
+@application.route('/fetch/<user_id>')
 def fetch(user_id):
     user_image_names = get_user_images(user_id)
 
@@ -24,4 +24,4 @@ def fetch(user_id):
     }))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    application.run(debug=True)
