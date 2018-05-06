@@ -27,43 +27,31 @@ def get_imgs_from_id(user_id):
     bucket_content = bucket.objects.filter(Prefix=prefix)
     return [obj.key for obj in bucket_content if '.jpeg' in obj.key]
 
-def simulate_stream_index():
-    frames = [
-        {
-            'S3Object': {
-                'Bucket': raw_bucket,
-                'Name': 'image1.jpeg'
-            }
-        },
-        {
-            'S3Object': {
-                'Bucket': raw_bucket,
-                'Name': 'image2.jpeg'
-            }
-        },
-        {
-            'S3Object': {
-                'Bucket': raw_bucket,
-                'Name': 'image3.jpeg'
-            }
-        },
-        {
-            'S3Object': {
-                'Bucket': raw_bucket,
-                'Name': 'image5.jpeg'
-            }
-        }
-    ]
+def index_from_raw():
+    # Collection management
+    cols = client.list_collections()['CollectionIds']
+    if 'test_collection' in cols:
+        client.delete_collection(
+            CollectionId='test_collection'
+        )
+    client.create_collection(
+            CollectionId='test_collection'
+    )
 
-    for frame in frames:
-        response = client.index_faces(
+    # Index every image from the raw bucket
+    bucket = s3.Bucket(raw_bucket)
+    for obj in bucket.objects.all():
+        print(obj.key)
+        client.index_faces(
             CollectionId='test_collection',
             Image={
-                'S3Object': frame['S3Object']
+                'S3Object': {
+                    'Bucket': raw_bucket,
+                    'Name': obj.key
+                }
             },
-            ExternalImageId=frame['S3Object']['Name']
+            ExternalImageId=obj.key
         )
-        print(response)
 
 def search_collection(input_img, collection):
     return client.search_faces_by_image(
@@ -72,7 +60,7 @@ def search_collection(input_img, collection):
             'S3Object': input_img
         },
         MaxFaces=100,
-        FaceMatchThreshold=1
+        FaceMatchThreshold=20
     )
 
 if __name__ == '__main__':
@@ -83,4 +71,7 @@ if __name__ == '__main__':
     print(test_img)
     collection = 'test_collection'
 
-    print(search_collection(test_img, collection)['FaceMatches'])
+    results = search_collection(test_img, collection)['FaceMatches']
+    for result in results:
+        print(result['Face']['ExternalImageId'], result['Similarity'], sep='\t')
+    #ndex_from_raw()
