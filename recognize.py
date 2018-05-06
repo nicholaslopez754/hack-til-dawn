@@ -71,14 +71,16 @@ def search_collection(input_img, collection):
         Image={
             'S3Object': input_img
         },
-        FaceMatchThreshold=70
+        MaxFaces=100,
+        FaceMatchThreshold=1
     )
 
 if __name__ == '__main__':
     test_img = {
         'Bucket': train_bucket,
-        'Name': get_imgs_from_id('72358039-504B-4180-AB0C-8E6443C7B0E8')[0]
+        'Name': get_imgs_from_id('2D2BB700-419A-4BC0-B2F0-8C54D0A6D6A0')[0]
     }
+    print(test_img)
     collection = 'test_collection'
 
-    print(search_collection(test_img, collection))
+    print(search_collection(test_img, collection)['FaceMatches'])
