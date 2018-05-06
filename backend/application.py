@@ -4,6 +4,10 @@ from config import raw_collection, similarity_threshold
 
 app = Flask(__name__)
 
+@app.route('/')
+def root():
+    return "Crowd Cam Server"
+
 @app.route('/fetch/<user_id>')
 def fetch(user_id):
     user_image_names = get_user_images(user_id)
