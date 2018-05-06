@@ -23,9 +23,19 @@ def get_user_images(user_id):
     bucket_content = bucket.objects.filter(Prefix=prefix)
     return [obj.key for obj in bucket_content if '.jpeg' in obj.key]
 
-# Testing utility function to simulate lambda index
-def index_from_raw(collection):
-    # Collection management
+def index_raw_image(image_name, collection):
+    response = client.index_faces(
+            CollectionId=collection,
+            Image={
+                'S3Object': {
+                    'Bucket': config.raw_bucket,
+                    'Name': image_name
+                }
+            },
+            ExternalImageId=image_name
+        )
+
+def reset_collection(collection):
     cols = client.list_collections()['CollectionIds']
     if collection in cols:
         client.delete_collection(
@@ -35,10 +45,14 @@ def index_from_raw(collection):
             CollectionId=collection
     )
 
+# Testing utility function to simulate lambda index
+def index_from_raw(collection):
+    # Make a fresh collection
+    reset_collection(collection)
+
     # Index every image from the raw bucket
     bucket = s3.Bucket(config.raw_bucket)
     for obj in bucket.objects.all():
-        print(obj.key)
         client.index_faces(
             CollectionId=collection,
             Image={
